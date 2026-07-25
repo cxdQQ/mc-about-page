@@ -1,0 +1,24 @@
+# QWQ Texture Packs - Apache Configuration
+
+# Deny access to sensitive directories
+<IfModule mod_rewrite.c>
+    RewriteRule ^includes/ - [F,L]
+    RewriteRule ^data/ - [F,L]
+</IfModule>
+
+# Deny directory listing
+Options -Indexes
+
+# Set UTF-8 charset
+AddDefaultCharset UTF-8
+
+# Protect files
+<FilesMatch "\.(sql|md|log)$">
+    Deny from all
+</FilesMatch>
+
+# PHP settings (if php_value is allowed)
+<IfModule mod_php.c>
+    php_flag display_errors on
+    php_value error_reporting E_ALL
+</IfModule>
