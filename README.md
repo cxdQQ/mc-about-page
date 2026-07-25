@@ -102,4 +102,15 @@ chown -R www:www assets/uploads
 
 ## 许可证
 
-MIT License
+MIT License — 详见 [LICENSE](./LICENSE) 文件。
+
+### 版权声明
+
+本项目的版权归 **茉莉柚茶**（QQ: **3883739493**）所有。
+
+任何使用、修改或分发本项目代码的，**必须保留上述版权声明和 QQ 信息**，不得删除或修改 LICENSE 文件中的版权归属。**禁止去除或遮挡网站页面、README、LICENSE 等任何位置显示的版权信息和原作者标识。**
+
+### 联系方式
+
+- QQ：**3883739493**
+- GitHub：[cxdQQ](https://github.com/cxdQQ)
