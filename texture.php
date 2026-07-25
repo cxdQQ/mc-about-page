@@ -184,7 +184,7 @@ if (!$texture) {
 
     <!-- Footer -->
     <footer style="text-align:center;padding:40px 24px;color:var(--text-muted);font-size:0.85rem;border-top:1px solid rgba(0,0,0,0.06);">
-        <p>&copy; 2026 <strong>茉莉柚茶</strong> (QQ: <strong>3883739493</strong>). All rights reserved.</p>
+        <p>&copy; 2026 <strong>抽象のQQ</strong> (QQ: <strong>3883739493</strong>). All rights reserved.</p>
         <p style="margin-top:4px;">为 Minecraft 打造高品质材质包. Minecraft 是 Mojang Studios 的商标.</p>
     </footer>
 

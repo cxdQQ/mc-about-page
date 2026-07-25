@@ -112,5 +112,5 @@ MIT License — 详见 [LICENSE](./LICENSE) 文件。
 
 ### 联系方式
 
-- QQ：**3883739493**
+- QQ：**3883739493**（抽象のQQ）
 - GitHub：[cxdQQ](https://github.com/cxdQQ)
