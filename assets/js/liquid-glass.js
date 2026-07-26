@@ -220,7 +220,12 @@
         initialized = true;
 
         setupFilter();
+        // Auto-apply to elements with data-liquid-glass attribute
         document.querySelectorAll('[data-liquid-glass]').forEach(applyTo);
+        // Also auto-apply to elements that should always have the effect
+        document.querySelectorAll('.sidebar-card, .gallery-item, .upload-modal-content').forEach(function(el) {
+            if (!el._lgDone) applyTo(el);
+        });
 
         document.addEventListener('mousemove', function (e) {
             targetX = e.clientX / window.innerWidth;

@@ -25,7 +25,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
 <body>
     <div class="admin-layout">
         <!-- Sidebar -->
-        <aside class="admin-sidebar">
+        <aside class="admin-sidebar" data-liquid-glass data-liquid-elasticity="0.08" data-liquid-scale="40">
             <div class="admin-sidebar-brand">
                 <span class="logo" style="width:32px;height:32px;font-size:15px;">茉</span>
                 茉莉柚茶 管理
@@ -69,7 +69,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                 <?php endif; ?>
 
                 <!-- Basic Info -->
-                <div class="sidebar-card glass" style="margin-bottom:24px;">
+                <div class="sidebar-card" style="margin-bottom:24px;">
                     <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">基本信息</h3>
                     <div class="form-row">
                         <div class="form-group">
@@ -92,11 +92,11 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                 </div>
 
                 <!-- Cover Image -->
-                <div class="sidebar-card glass" style="margin-bottom:24px;">
+                <div class="sidebar-card" style="margin-bottom:24px;">
                     <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">封面图片</h3>
                     <div class="form-group">
                         <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-                            <label class="btn btn-glass btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+                            <label class="btn btn-ghost btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                                 上传封面
                                 <input type="file" accept="image/*" class="upload-input" data-target="cover_image" hidden>
@@ -108,7 +108,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                 </div>
 
                 <!-- Meta Info -->
-                <div class="sidebar-card glass" style="margin-bottom:24px;">
+                <div class="sidebar-card" style="margin-bottom:24px;">
                     <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">详细信息</h3>
                     <div class="form-row">
                         <div class="form-group">
@@ -133,7 +133,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                 </div>
 
                 <!-- Features -->
-                <div class="sidebar-card glass" style="margin-bottom:24px;">
+                <div class="sidebar-card" style="margin-bottom:24px;">
                     <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">材质特性</h3>
                     <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px;">每行一个特性描述</p>
                     <div class="form-group">
@@ -142,12 +142,12 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                 </div>
 
                 <!-- Images -->
-                <div class="sidebar-card glass" style="margin-bottom:24px;">
+                <div class="sidebar-card" style="margin-bottom:24px;">
                     <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">截图</h3>
                     <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px;">每行一个图片 URL，或点击上传图片</p>
                     <div class="form-group">
                         <div style="display:flex;gap:8px;margin-bottom:8px;">
-                            <label class="btn btn-glass btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+                            <label class="btn btn-ghost btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                                 上传图片
                                 <input type="file" accept="image/*" class="upload-input" data-target="images" hidden multiple>
@@ -159,12 +159,12 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                 </div>
 
                 <!-- Videos -->
-                <div class="sidebar-card glass" style="margin-bottom:24px;">
+                <div class="sidebar-card" style="margin-bottom:24px;">
                     <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">视频</h3>
                     <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px;">每行一个视频 URL，或点击上传视频文件（MP4/WebM）</p>
                     <div class="form-group">
                         <div style="display:flex;gap:8px;margin-bottom:8px;">
-                            <label class="btn btn-glass btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+                            <label class="btn btn-ghost btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                                 上传视频
                                 <input type="file" accept="video/*" class="upload-input" data-target="videos" hidden multiple>
@@ -176,7 +176,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                 </div>
 
                 <!-- Tags -->
-                <div class="sidebar-card glass" style="margin-bottom:24px;">
+                <div class="sidebar-card" style="margin-bottom:24px;">
                     <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;">标签</h3>
                     <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px;">用逗号分隔</p>
                     <div class="form-group">
@@ -190,7 +190,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                         <?= $isEdit ? '保存修改' : '创建材质包' ?>
                     </button>
-                    <a href="/admin/index.php" class="btn btn-glass" style="padding:14px 32px;font-size:1rem;">取消</a>
+                    <a href="/admin/index.php" class="btn btn-ghost" style="padding:14px 32px;font-size:1rem;">取消</a>
                 </div>
             </form>
         </main>
@@ -200,7 +200,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
 
     <!-- Upload Progress Modal -->
     <div id="upload-modal" class="upload-modal">
-        <div class="upload-modal-content glass">
+        <div class="upload-modal-content" data-liquid-glass data-liquid-elasticity="0.15" data-liquid-scale="60">
             <div class="upload-modal-header">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 <span>上传文件中</span>
@@ -214,7 +214,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                 <div class="upload-progress-text" id="upload-progress-text">0%</div>
             </div>
             <div class="upload-modal-footer">
-                <button type="button" class="btn btn-glass btn-sm" id="upload-cancel-btn" style="padding:8px 20px;font-size:0.85rem;">取消上传</button>
+                <button type="button" class="btn btn-ghost btn-sm" id="upload-cancel-btn" style="padding:8px 20px;font-size:0.85rem;">取消上传</button>
             </div>
         </div>
     </div>

@@ -77,7 +77,7 @@ $textures = getTextures();
         <?php else: ?>
         <div class="texture-grid">
             <?php foreach ($textures as $texture): ?>
-            <a href="/texture.php?id=<?= $texture['id'] ?>" class="texture-card glass-card" data-liquid-glass data-liquid-elasticity="0.15" data-liquid-scale="60" style="text-decoration:none;color:inherit;display:block;">
+            <a href="/texture.php?id=<?= $texture['id'] ?>" class="texture-card" data-liquid-glass data-liquid-elasticity="0.15" data-liquid-scale="60" style="text-decoration:none;color:inherit;display:block;">
                 <div class="texture-card-image" style="background: linear-gradient(135deg, 
                     <?php 
                         $colors = ['#1a1a2e,#16213e', '#2d1b3d,#1a1a2e', '#1a2e1a,#16213e', '#2e2e1a,#1a1a2e', '#1a2e2e,#16213e'];

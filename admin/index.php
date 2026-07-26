@@ -112,8 +112,8 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
                             <td style="color:var(--text-muted);font-size:0.85rem;"><?= $texture['created_at'] ?></td>
                             <td>
                                 <div class="table-actions">
-                                    <a href="/admin/edit.php?id=<?= $texture['id'] ?>" class="btn btn-glass btn-sm">编辑</a>
-                                    <a href="/texture.php?id=<?= $texture['id'] ?>" class="btn btn-glass btn-sm" target="_blank">预览</a>
+                                    <a href="/admin/edit.php?id=<?= $texture['id'] ?>" class="btn btn-ghost btn-sm">编辑</a>
+                                    <a href="/texture.php?id=<?= $texture['id'] ?>" class="btn btn-ghost btn-sm" target="_blank">预览</a>
                                     <a href="?delete=<?= $texture['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('确定要删除「<?= htmlspecialchars($texture['name']) ?>」吗？')">删除</a>
                                 </div>
                             </td>

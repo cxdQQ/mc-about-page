@@ -55,7 +55,7 @@ if (!$texture) {
         </div>
         <div class="detail-hero-overlay"></div>
         <div class="detail-hero-content">
-            <a href="/#textures" class="btn btn-glass btn-sm" style="margin-bottom:20px;display:inline-flex;">
+            <a href="/#textures" class="btn btn-ghost btn-sm" style="margin-bottom:20px;display:inline-flex;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m7-7l-7 7 7 7"/></svg>
                 返回
             </a>
@@ -106,7 +106,7 @@ if (!$texture) {
                 <h2>截图展示</h2>
                 <div class="gallery-grid">
                     <?php foreach ($texture['images'] as $img): ?>
-                    <div class="gallery-item glass-sm" data-liquid-glass data-liquid-elasticity="0.1" data-liquid-scale="30">
+                    <div class="gallery-item" data-liquid-glass data-liquid-elasticity="0.1" data-liquid-scale="30">
                         <?php if (strpos($img, '/assets/uploads/') === 0): ?>
                         <img src="<?= htmlspecialchars($img) ?>" alt="截图" loading="lazy">
                         <?php else: ?>
@@ -127,7 +127,7 @@ if (!$texture) {
                 <h2>视频展示</h2>
                 <div class="video-grid">
                     <?php foreach ($texture['videos'] as $video): ?>
-                    <div class="video-wrapper glass-sm">
+                    <div class="video-wrapper">
                         <?php if (strpos($video, '/assets/uploads/') === 0): ?>
                         <video src="<?= htmlspecialchars($video) ?>" controls preload="metadata" style="width:100%;height:100%;border-radius:12px;background:#000;"></video>
                         <?php else: ?>
@@ -142,7 +142,7 @@ if (!$texture) {
 
         <!-- Sidebar -->
         <div class="detail-sidebar">
-            <div class="sidebar-card glass" data-liquid-glass data-liquid-elasticity="0.12" data-liquid-scale="50">
+            <div class="sidebar-card" data-liquid-glass data-liquid-elasticity="0.12" data-liquid-scale="50">
                 <h3>材质信息</h3>
                 <div class="sidebar-info">
                     <div class="sidebar-info-row">

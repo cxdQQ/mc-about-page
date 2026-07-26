@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="login-page">
-        <div class="login-card glass" data-liquid-glass data-liquid-elasticity="0.1" data-liquid-scale="60">
+        <div class="login-card" data-liquid-glass data-liquid-elasticity="0.1" data-liquid-scale="60">
             <a href="/" class="navbar-brand" style="justify-content:center;margin-bottom:24px;">
                 <span class="logo">茉</span>
                 茉莉柚茶
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
 
             <div style="text-align:center;margin-top:20px;">
-                <a href="/" class="btn btn-glass btn-sm" style="display:inline-flex;">
+                <a href="/" class="btn btn-ghost btn-sm" style="display:inline-flex;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m7-7l-7 7 7 7"/></svg>
                     返回首页
                 </a>
