@@ -149,8 +149,7 @@
         var pos = window.getComputedStyle(el).position;
         if (pos === 'static') el.style.position = 'relative';
 
-        // Clear element's own background so glass layers show through
-        el.style.background = 'transparent';
+        // Let element's own background show through (CSS controls the base layer)
 
         // Read border-radius from computed style or use default
         var r = window.getComputedStyle(el).borderRadius;
@@ -197,9 +196,7 @@
             }
 
             if (layer.name === 'cover') {
-                div.style.background = 'rgba(0,0,0,0.12)';
-                div.style.backdropFilter = 'blur(2px)';
-                div.style.webkitBackdropFilter = div.style.backdropFilter;
+                div.style.background = 'rgba(0,0,0,0.06)';
             }
 
             if (layer.name === 'sharp') {
