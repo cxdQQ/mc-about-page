@@ -16,7 +16,7 @@ $textures = getTextures();
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar" id="navbar" data-liquid-glass data-liquid-elasticity="0.08" data-liquid-scale="40">
+    <nav class="navbar" id="navbar">
         <div class="navbar-inner">
             <a href="/" class="navbar-brand">
                 <span class="logo">茉</span>
