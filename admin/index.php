@@ -24,7 +24,7 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
 <body>
     <div class="admin-layout">
         <!-- Sidebar -->
-        <aside class="admin-sidebar">
+        <aside class="admin-sidebar" data-liquid-glass data-liquid-elasticity="0.08" data-liquid-scale="40">
             <div class="admin-sidebar-brand">
                 <span class="logo" style="width:32px;height:32px;font-size:15px;">茉</span>
                 茉莉柚茶 管理
@@ -125,6 +125,7 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
             <?php endif; ?>
         </main>
     </div>
+    <script src="/assets/js/liquid-glass.js" defer></script>
     <script src="/assets/js/main.js"></script>
 </body>
 </html>

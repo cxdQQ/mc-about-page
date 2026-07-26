@@ -195,6 +195,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
             </form>
         </main>
     </div>
+    <script src="/assets/js/liquid-glass.js" defer></script>
     <script src="/assets/js/main.js"></script>
 
     <!-- Upload Progress Modal -->

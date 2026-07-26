@@ -21,7 +21,7 @@ if (!$texture) {
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="navbar" data-liquid-glass data-liquid-elasticity="0.08" data-liquid-scale="40">
         <div class="navbar-inner">
             <a href="/" class="navbar-brand">
                 <span class="logo">茉</span>
@@ -90,7 +90,7 @@ if (!$texture) {
             <div class="detail-features">
                 <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:16px;">材质特性</h2>
                 <?php foreach ($texture['features'] as $feature): ?>
-                <div class="feature-item">
+                <div class="feature-item" data-liquid-glass data-liquid-elasticity="0.2" data-liquid-scale="30">
                     <div class="icon">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                     </div>
@@ -106,7 +106,7 @@ if (!$texture) {
                 <h2>截图展示</h2>
                 <div class="gallery-grid">
                     <?php foreach ($texture['images'] as $img): ?>
-                    <div class="gallery-item glass-sm">
+                    <div class="gallery-item glass-sm" data-liquid-glass data-liquid-elasticity="0.1" data-liquid-scale="30">
                         <?php if (strpos($img, '/assets/uploads/') === 0): ?>
                         <img src="<?= htmlspecialchars($img) ?>" alt="截图" loading="lazy">
                         <?php else: ?>
@@ -142,7 +142,7 @@ if (!$texture) {
 
         <!-- Sidebar -->
         <div class="detail-sidebar">
-            <div class="sidebar-card glass">
+            <div class="sidebar-card glass" data-liquid-glass data-liquid-elasticity="0.12" data-liquid-scale="50">
                 <h3>材质信息</h3>
                 <div class="sidebar-info">
                     <div class="sidebar-info-row">
@@ -190,10 +190,11 @@ if (!$texture) {
 
     <!-- Lightbox -->
     <div class="lightbox" id="lightbox">
-        <button class="lightbox-close" onclick="document.getElementById('lightbox').classList.remove('active')">✕</button>
+        <button class="lightbox-close" data-liquid-glass data-liquid-elasticity="0.25" data-liquid-scale="20" onclick="document.getElementById('lightbox').classList.remove('active')">✕</button>
         <img id="lightbox-img" src="" alt="预览">
     </div>
 
+    <script src="/assets/js/liquid-glass.js" defer></script>
     <script src="/assets/js/main.js"></script>
 </body>
 </html>

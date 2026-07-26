@@ -30,7 +30,7 @@ try {
     
     echo "<!DOCTYPE html><html lang='zh-CN'><head><meta charset='UTF-8'><title>迁移完成</title>";
     echo "<style>body{font-family:system-ui,sans-serif;background:#f8fafc;color:#0f172a;display:flex;align-items:center;justify-content:center;min-height:100vh;}</style>";
-    echo "</head><body><div style='text-align:center;padding:40px;background:rgba(255,255,255,0.6);border-radius:16px;border:1px solid rgba(0,0,0,0.06);max-width:480px;'>";
+    echo "</head><body><div style='text-align:center;padding:40px;background:rgba(255,255,255,0.6);border-radius:16px;border:1px solid rgba(0,0,0,0.06);max-width:480px;' data-liquid-glass data-liquid-elasticity='0.1' data-liquid-scale='50'>";
     echo "<div style='font-size:48px;margin-bottom:16px;'>✅</div>";
     echo "<h1 style='font-size:1.5rem;margin-bottom:8px;'>迁移成功</h1>";
     echo "<p style='color:#94a3b8;'>" . htmlspecialchars($msg) . "</p>";
@@ -40,5 +40,5 @@ try {
 } catch (Exception $e) {
     echo "<!DOCTYPE html><html lang='zh-CN'><head><meta charset='UTF-8'><title>迁移失败</title></head><body>";
     echo "<h1>迁移失败</h1><p>" . htmlspecialchars($e->getMessage()) . "</p>";
-    echo "</body></html>";
+    echo "<script src='/assets/js/liquid-glass.js' defer></script></body></html>";
 }

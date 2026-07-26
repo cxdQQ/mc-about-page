@@ -138,5 +138,5 @@ echo "<h1>数据库已就绪</h1>";
 echo "<p>📦 材质包: <strong>{$count}</strong> 个</p>";
 echo "<p>👤 管理员: <strong>{$adminCount}</strong> 个 (admin / admin123)</p>";
 echo "<a href='/' class='btn'>前往首页</a>";
-echo "</div></body></html>";
+echo "</div><script src='/assets/js/liquid-glass.js' defer></script></body></html>";
 ?>

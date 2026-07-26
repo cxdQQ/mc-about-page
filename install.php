@@ -518,5 +518,6 @@ $stepLabels = ['连接数据库', '创建数据表', '设置管理员', '导入�
             <?php endif; ?>
         </div>
     </div>
+<script src="/assets/js/liquid-glass.js" defer></script>
 </body>
 </html>

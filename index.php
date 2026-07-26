@@ -14,7 +14,7 @@ $textures = getTextures();
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar" id="navbar">
+    <nav class="navbar" id="navbar" data-liquid-glass data-liquid-elasticity="0.08" data-liquid-scale="40">
         <div class="navbar-inner">
             <a href="/" class="navbar-brand">
                 <span class="logo">茉</span>
@@ -77,7 +77,7 @@ $textures = getTextures();
         <?php else: ?>
         <div class="texture-grid">
             <?php foreach ($textures as $texture): ?>
-            <a href="/texture.php?id=<?= $texture['id'] ?>" class="texture-card glass-card" style="text-decoration:none;color:inherit;display:block;">
+            <a href="/texture.php?id=<?= $texture['id'] ?>" class="texture-card glass-card" data-liquid-glass data-liquid-elasticity="0.15" data-liquid-scale="60" style="text-decoration:none;color:inherit;display:block;">
                 <div class="texture-card-image" style="background: linear-gradient(135deg, 
                     <?php 
                         $colors = ['#1a1a2e,#16213e', '#2d1b3d,#1a1a2e', '#1a2e1a,#16213e', '#2e2e1a,#1a1a2e', '#1a2e2e,#16213e'];
@@ -115,6 +115,7 @@ $textures = getTextures();
         <p style="margin-top:4px;">为 Minecraft 打造高品质材质包. Minecraft 是 Mojang Studios 的商标.</p>
     </footer>
 
+    <script src="/assets/js/liquid-glass.js" defer></script>
     <script src="/assets/js/main.js"></script>
 </body>
 </html>
