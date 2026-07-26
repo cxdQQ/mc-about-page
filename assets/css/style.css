@@ -96,40 +96,16 @@ body::before {
     overflow: hidden;
 }
 
-/* Glass layer base styles (JS sets inline styles, CSS is fallback) */
-.liquid_glass-outer,
-.liquid_glass-cover,
-.liquid_glass-sharp,
-.liquid_glass-reflect {
+/* Glass layer base — JS handles all visual styles via inline CSS.
+   These are just positioning fallbacks. */
+.lg-outer,
+.lg-cover,
+.lg-sharp,
+.lg-reflect {
     position: absolute;
     pointer-events: none;
     z-index: 1;
     overflow: hidden;
-}
-
-.liquid_glass-outer {
-    inset: 0;
-}
-
-.liquid_glass-cover {
-    inset: 0;
-    background: rgba(0, 0, 0, 0.12);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-}
-
-.liquid_glass-sharp {
-    inset: 0;
-    box-shadow:
-        inset 1px 1px 0px 0px rgba(255, 255, 255, 0.5),
-        inset -1px -1px 0px 0px rgba(255, 255, 255, 0.6);
-}
-
-.liquid_glass-reflect {
-    inset: 1px;
-    box-shadow:
-        inset 2px 2px 6px 2px rgba(255, 255, 255, 0.2),
-        inset -2px -2px 4px -1px rgba(255, 255, 255, 0.2);
 }
 
 /* === Card Base (liquid glass handles visual, this handles layout) === */

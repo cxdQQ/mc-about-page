@@ -1,245 +1,326 @@
 /**
- * Liquid Glass Effect
- * SVG filter + CSS layered glass + mouse tracking displacement
- * Inspired by https://github.com/shuding/liquid-glass
+ * Liquid Glass Effect — iOS 18 style refractive glass
  *
- * Usage: Add `data-liquid-glass` to any element to apply the effect.
- * The element should have position: relative (or be a positioning context).
- * Compatible with glass-card, glass, navbar, and other elements.
+ * SVG displacement map + CSS backdrop-blur + mouse/touch tracking
+ * Creates a refractive edge distortion that follows the cursor.
+ *
+ * Usage: Add `data-liquid-glass` to any element, or apply via JS.
+ *   <div data-liquid-glass data-lg-elasticity="0.12" data-lg-scale="50">...</div>
+ *
+ * Attributes:
+ *   data-lg-elasticity  — mouse tracking responsiveness (0–1, default 0.10)
+ *   data-lg-scale       — displacement intensity (pixels, default 50)
  */
-
 (function () {
     'use strict';
 
-    var filterId = 'liquid_glass_filter';
-    var mapId = 'liquid_glass_map';
+    /* ─── Configuration ─── */
+    var FILTER_ID = 'lg-filter';
+    var MAP_ID = 'lg-map';
+
+    // Canvas resolution for the displacement map (keep modest for performance)
+    var MAP_W = 192;
+    var MAP_H = 96;
+
+    /* ─── State ─── */
+    var mouseX = 0.5, mouseY = 0.5;   // smoothed position
+    var rawX = 0.5, rawY = 0.5;       // raw input position
+    var targets = [];
     var initialized = false;
-    var allTargets = [];
     var animId = null;
 
-    // --- SVG filter helpers ---
-    var mouseX = 0.5, mouseY = 0.5;
-    var targetX = 0.5, targetY = 0.5;
+    /* ─── DOM refs (set once) ─── */
+    var svgFilter = null;
+    var feImg = null;
+    var feDisp = null;
 
+    /* ─── Canvas for displacement map ─── */
+    var canvas = document.createElement('canvas');
+    canvas.style.display = 'none';
+    var ctx = canvas.getContext('2d');
+
+    /* ─── Math helpers ─── */
     function len(x, y) { return Math.sqrt(x * x + y * y); }
 
-    function smoothStep(a, b, t) {
-        t = Math.max(0, Math.min(1, (t - a) / (b - a)));
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+    function smoothstep(edge0, edge1, x) {
+        var t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
         return t * t * (3 - 2 * t);
     }
 
+    // Signed distance function for a rounded rectangle
+    // (px, py) are coordinates relative to center, (w, h) are half-dimensions, r is corner radius
     function rrectSDF(px, py, w, h, r) {
         var qx = Math.abs(px) - w + r;
         var qy = Math.abs(py) - h + r;
         return Math.min(Math.max(qx, qy), 0) + len(Math.max(qx, 0), Math.max(qy, 0)) - r;
     }
 
-    // --- Setup global SVG filter ---
+    /* ─── 1. Setup SVG filter ─── */
     function setupFilter() {
-        if (document.getElementById(filterId)) return;
+        if (document.getElementById(FILTER_ID)) return;
 
         var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.id = 'liquid_glass_svg';
+        svg.id = 'lg-svg';
         svg.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;pointer-events:none;z-index:-1;';
 
         var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+
         var filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
-        filter.id = filterId;
-        filter.setAttribute('colorInterpolationFilters', 'sRGB');
-        filter.setAttribute('x', '-20%');
-        filter.setAttribute('y', '-20%');
-        filter.setAttribute('width', '140%');
-        filter.setAttribute('height', '140%');
+        filter.id = FILTER_ID;
+        filter.setAttribute('color-interpolation-filters', 'sRGB');
+        // Expand bounds so the displacement doesn't clip
+        filter.setAttribute('x', '-50%');
+        filter.setAttribute('y', '-50%');
+        filter.setAttribute('width', '200%');
+        filter.setAttribute('height', '200%');
 
-        var feImg = document.createElementNS('http://www.w3.org/2000/svg', 'feImage');
-        feImg.id = mapId;
+        // Displacement source image (the canvas data URL)
+        feImg = document.createElementNS('http://www.w3.org/2000/svg', 'feImage');
+        feImg.id = MAP_ID;
         feImg.setAttribute('preserveAspectRatio', 'none');
+        // Use standard 'href' (xlink:href is deprecated)
+        feImg.setAttribute('href', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
+        feImg.setAttribute('width', '100%');
+        feImg.setAttribute('height', '100%');
 
-        var feDisp = document.createElementNS('http://www.w3.org/2000/svg', 'feDisplacementMap');
+        // Displacement map fe
+        feDisp = document.createElementNS('http://www.w3.org/2000/svg', 'feDisplacementMap');
         feDisp.setAttribute('in', 'SourceGraphic');
-        feDisp.setAttribute('in2', mapId);
+        feDisp.setAttribute('in2', MAP_ID);
         feDisp.setAttribute('xChannelSelector', 'R');
         feDisp.setAttribute('yChannelSelector', 'G');
-        feDisp.setAttribute('scale', '60');
+        feDisp.setAttribute('scale', '40');
 
         filter.appendChild(feImg);
         filter.appendChild(feDisp);
         defs.appendChild(filter);
         svg.appendChild(defs);
-        document.body.appendChild(svg);
+        document.body.prepend(svg);
     }
 
-    // --- Displacement map rendering ---
-    var canvas = document.createElement('canvas');
-    canvas.style.display = 'none';
-    var ctx = canvas.getContext('2d');
-
+    /* ─── 2. Render displacement map ─── */
     function renderMap() {
-        var w = 128, h = 64;
+        var w = MAP_W, h = MAP_H;
         canvas.width = w;
         canvas.height = h;
-        var data = new Uint8ClampedArray(w * h * 4);
-        var maxScale = 0;
-        var vals = [];
 
-        for (var i = 0; i < data.length; i += 4) {
-            var px = (i / 4) % w;
-            var py = 0 | (i / 4 / w);
-            var ux = px / w, uy = py / h;
-            var ix = ux - 0.5, iy = uy - 0.5;
-            var mx = (mouseX - 0.5) * 0.3;
-            var my = (mouseY - 0.5) * 0.3;
+        // Mouse delta (normalized -1..1)
+        var mx = (mouseX - 0.5) * 2;
+        var my = (mouseY - 0.5) * 2;
 
-            var d = rrectSDF(ix, iy, 0.45, 0.4, 0.5);
-            var edge = smoothStep(0.5, 0, Math.abs(d) - 0.1);
-            var dist = len(ix - mx * 1.5, iy - my * 1.5);
-            var infl = Math.max(0, 1 - dist * 2.5);
-            var disp = edge * 0.1 + infl * 0.06;
+        // Store displacement vectors
+        var vals = new Float32Array(w * h * 2);
+        var maxVal = 0;
 
-            var ox = ix + mx * disp;
-            var oy = iy + my * disp;
-            var ripple = Math.max(0, 1 - dist * 3) * 0.03;
-            ox += (ix - mx) * ripple;
-            oy += (iy - my) * ripple;
+        var i, x, y, ux, uy, ix, iy, d, edgeWeight, dx, dy, dist, infl, ox, oy, ripple, rx, ry, tx, ty;
 
-            var tx = (ox + 0.5) * w - px;
-            var ty = (oy + 0.5) * h - py;
-            maxScale = Math.max(maxScale, Math.abs(tx), Math.abs(ty));
-            vals.push(tx, ty);
+        for (y = 0; y < h; y++) {
+            for (x = 0; x < w; x++) {
+                i = (y * w + x) * 2;
+                ux = x / w;
+                uy = y / h;
+                ix = ux - 0.5;
+                iy = uy - 0.5;
+
+                // Edge SDF — creates the "rim" of the glass
+                d = rrectSDF(ix, iy, 0.45, 0.4, 0.5);
+                edgeWeight = smoothstep(0.4, 0, Math.abs(d) - 0.04);
+
+                // Mouse influence: pull displacement toward cursor
+                dx = ix - mx * 0.35;
+                dy = iy - my * 0.35;
+                dist = len(dx, dy);
+                infl = Math.max(0, 1 - dist * 2.2);
+
+                // Combined displacement strength
+                var strength = edgeWeight * 0.12 + infl * 0.06;
+
+                ox = ix + mx * strength;
+                oy = iy + my * strength;
+
+                // Subtle ripple near the cursor
+                ripple = Math.max(0, 1 - dist * 3) * 0.035;
+                rx = ox + (ix - mx * 0.5) * ripple;
+                ry = oy + (iy - my * 0.5) * ripple;
+
+                tx = (rx + 0.5) * w - x;
+                ty = (ry + 0.5) * h - y;
+                vals[i] = tx;
+                vals[i + 1] = ty;
+                maxVal = Math.max(maxVal, Math.abs(tx), Math.abs(ty));
+            }
         }
 
-        maxScale = Math.max(maxScale * 0.5, 1);
-        var idx = 0;
-        for (var j = 0; j < data.length; j += 4) {
-            data[j] = ((vals[idx++] / maxScale) + 0.5) * 255;
-            data[j + 1] = ((vals[idx++] / maxScale) + 0.5) * 255;
-            data[j + 2] = 0;
-            data[j + 3] = 255;
+        // Normalize and pack into RGBA
+        var scale = Math.max(maxVal, 0.5) * 0.6;
+        var data = new Uint8ClampedArray(w * h * 4);
+        var idx;
+        for (i = 0; i < w * h; i++) {
+            idx = i * 4;
+            data[idx] = ((vals[i * 2] / scale) + 0.5) * 255;
+            data[idx + 1] = ((vals[i * 2 + 1] / scale) + 0.5) * 255;
+            data[idx + 2] = 128;
+            data[idx + 3] = 255;
         }
 
         ctx.putImageData(new ImageData(data, w, h), 0, 0);
 
-        var feImg = document.getElementById(mapId);
-        var feDisp = document.querySelector('#' + filterId + ' feDisplacementMap');
+        // Feed the map into the SVG filter
         if (feImg) {
-            feImg.setAttributeNS('http://www.w3.org/1999/xlink', 'href', canvas.toDataURL());
-            feImg.setAttribute('width', '' + w);
-            feImg.setAttribute('height', '' + h);
+            feImg.setAttribute('href', canvas.toDataURL());
         }
-        if (feDisp) feDisp.setAttribute('scale', '' + (maxScale * 0.8));
+        if (feDisp) {
+            feDisp.setAttribute('scale', String(Math.round(scale * 60)));
+        }
     }
 
-    // --- Animation loop ---
+    /* ─── 3. Animation loop ─── */
     function loop() {
-        var dx = targetX - mouseX;
-        var dy = targetY - mouseY;
-        mouseX += dx * 0.12;
-        mouseY += dy * 0.12;
-        if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) renderMap();
+        var dx = rawX - mouseX;
+        var dy = rawY - mouseY;
+        mouseX += dx * 0.10;
+        mouseY += dy * 0.10;
+        if (Math.abs(dx) > 0.0005 || Math.abs(dy) > 0.0005) {
+            renderMap();
+        }
         animId = requestAnimationFrame(loop);
     }
 
-    // --- Apply liquid glass layers to an element ---
+    /* ─── 4. Apply layers to a target element ─── */
     function applyTo(el) {
-        if (el._lgDone) return;
-        el._lgDone = true;
-        allTargets.push(el);
+        if (el._lgApplied) return;
+        el._lgApplied = true;
+        targets.push(el);
 
-        // Ensure element is a positioning context
-        var pos = window.getComputedStyle(el).position;
-        if (pos === 'static') el.style.position = 'relative';
+        // Ensure positioning context
+        if (getComputedStyle(el).position === 'static') {
+            el.style.position = 'relative';
+        }
 
-        // Let element's own background show through (CSS controls the base layer)
+        // Read border-radius from computed style
+        var rStyle = getComputedStyle(el).borderRadius;
+        var radius = parseInt(rStyle) || 18;
+        radius = Math.max(radius, 4);
+        var innerPad = Math.max(radius - 3, 2);
 
-        // Read border-radius from computed style or use default
-        var r = window.getComputedStyle(el).borderRadius;
-        // If multiple values (e.g. "10px 10px 0 0"), take the first
-        r = r ? r.split(' ')[0] : '21px';
-        var rv = parseInt(r) || 21;
-        var ri = Math.max(rv - 5, 0);
+        // Build the edge-only mask SVG inline
+        var maskSvgOuter = 'data:image/svg+xml;charset=utf-8,' +
+            encodeURIComponent(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">' +
+                '<rect x="0" y="0" width="100%" height="100%" rx="' + radius + '" ry="' + radius + '" fill="white"/>' +
+                '</svg>'
+            );
+        var maskSvgInner = 'data:image/svg+xml;charset=utf-8,' +
+            encodeURIComponent(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">' +
+                '<rect x="' + innerPad + '" y="' + innerPad + '" width="calc(100% - ' + (innerPad * 2) + 'px)" height="calc(100% - ' + (innerPad * 2) + 'px)" rx="' + (radius - innerPad) + '" ry="' + (radius - innerPad) + '" fill="white"/>' +
+                '</svg>'
+            );
 
-        // Create glass layers as children.
-        // We prepend in reverse order so the final DOM order is:
-        // outer (0), cover (2), sharp (3), reflect (2), then original content.
-        // With relative z-index (no explicit z-index on content),
-        // later siblings render on top → glass behind content.
+        // Layers in DOM order (prepended in reverse so final order is: outer, cover, sharp, reflect, content)
         var layers = [
-            { name: 'reflect', z: 1, inset: '1px' },
+            { name: 'reflect', z: 1, inset: '2px' },
             { name: 'sharp', z: 1, inset: '0' },
             { name: 'cover', z: 1, inset: '0' },
             { name: 'outer', z: 1, inset: '0' }
         ];
-        layers.forEach(function (layer) {
-            var div = document.createElement('div');
-            div.className = 'liquid_glass-' + layer.name;
-            div.style.cssText = [
+
+        var i, layer, div, styleText;
+        for (i = 0; i < layers.length; i++) {
+            layer = layers[i];
+            div = document.createElement('div');
+            div.className = 'lg-' + layer.name;
+
+            styleText = [
                 'position:absolute',
                 'inset:' + layer.inset,
                 'pointer-events:none',
                 'z-index:' + layer.z,
-                'border-radius:' + r,
+                'border-radius:' + radius + 'px',
                 'overflow:hidden'
             ].join(';') + ';';
 
-            if (layer.name === 'outer') {
-                div.style.backdropFilter = 'url(#' + filterId + ')';
-                div.style.webkitBackdropFilter = div.style.backdropFilter;
-                // Mask: exclude inner area so filter only applies to edges
-                var innerPad = Math.max(rv - 2, 1);
-                div.style.maskImage = [
-                    "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100%\" height=\"100%\"><rect x=\"0\" y=\"0\" width=\"100%\" height=\"100%\" rx=\"" + rv + "\" ry=\"" + rv + "\" fill=\"white\"/></svg>')",
-                    "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100%\" height=\"100%\"><rect x=\"" + innerPad + "\" y=\"" + innerPad + "\" width=\"calc(100% - " + (innerPad * 2) + "px)\" height=\"calc(100% - " + (innerPad * 2) + "px)\" rx=\"" + ri + "\" ry=\"" + ri + "\" fill=\"white\"/></svg>')"
-                ].join(', ');
-                div.style.maskComposite = 'exclude';
-                // Safari uses 'xor' for the exclude operation
-                div.style.webkitMaskComposite = 'xor';
+            switch (layer.name) {
+                case 'outer':
+                    // Apply the SVG displacement filter on the backdrop
+                    styleText += 'backdrop-filter:url(#' + FILTER_ID + ');';
+                    styleText += '-webkit-backdrop-filter:url(#' + FILTER_ID + ');';
+                    // Edge-only mask: outer shape minus inner shape
+                    styleText += 'mask-image:url(' + maskSvgOuter + '),url(' + maskSvgInner + ');';
+                    styleText += '-webkit-mask-image:url(' + maskSvgOuter + '),url(' + maskSvgInner + ');';
+                    styleText += 'mask-composite:exclude;';
+                    styleText += '-webkit-mask-composite:xor;';
+                    break;
+
+                case 'cover':
+                    // Frosted glass background
+                    styleText += 'background:rgba(255,255,255,0.55);';
+                    styleText += 'backdrop-filter:blur(24px);';
+                    styleText += '-webkit-backdrop-filter:blur(24px);';
+                    break;
+
+                case 'sharp':
+                    // Crisp edge highlight
+                    styleText += 'box-shadow:inset 0 0 0 1px rgba(255,255,255,0.5),inset 0 0 0 0.5px rgba(255,255,255,0.3);';
+                    break;
+
+                case 'reflect':
+                    // Soft inner glow / reflection
+                    styleText += 'box-shadow:inset 2px 2px 10px 2px rgba(255,255,255,0.12),inset -2px -2px 6px -1px rgba(255,255,255,0.08);';
+                    break;
             }
 
-            if (layer.name === 'cover') {
-                div.style.background = 'rgba(255,255,255,0.55)';
-                div.style.backdropFilter = 'blur(20px)';
-                div.style.webkitBackdropFilter = div.style.backdropFilter;
-            }
-
-            if (layer.name === 'sharp') {
-                div.style.boxShadow = 'inset 1px 1px 0 0 rgba(255,255,255,0.5), inset -1px -1px 0 0 rgba(255,255,255,0.6)';
-            }
-
-            if (layer.name === 'reflect') {
-                div.style.boxShadow = 'inset 2px 2px 6px 2px rgba(255,255,255,0.2), inset -2px -2px 4px -1px rgba(255,255,255,0.2)';
-            }
-
-            el.insertBefore(div, el.firstChild);
-        });
+            div.style.cssText = styleText;
+            el.prepend(div);
+        }
     }
 
-    // --- Init ---
+    /* ─── 5. Initialization ─── */
     function init() {
         if (initialized) return;
         initialized = true;
 
         setupFilter();
-        // Auto-apply to elements with data-liquid-glass attribute
+
+        // Apply to elements with data-liquid-glass attribute
         document.querySelectorAll('[data-liquid-glass]').forEach(applyTo);
-        // Also auto-apply to elements that should always have the effect
-        document.querySelectorAll('.sidebar-card, .gallery-item, .upload-modal-content').forEach(function(el) {
-            if (!el._lgDone) applyTo(el);
+
+        // Apply to elements that should always have the effect
+        document.querySelectorAll('.sidebar-card, .gallery-item, .upload-modal-content').forEach(function (el) {
+            if (!el._lgApplied) applyTo(el);
         });
 
+        // Mouse tracking
         document.addEventListener('mousemove', function (e) {
-            targetX = e.clientX / window.innerWidth;
-            targetY = e.clientY / window.innerHeight;
+            rawX = e.clientX / window.innerWidth;
+            rawY = e.clientY / window.innerHeight;
         });
 
+        // Touch support (mobile)
+        document.addEventListener('touchmove', function (e) {
+            var touch = e.touches[0];
+            if (touch) {
+                rawX = touch.clientX / window.innerWidth;
+                rawY = touch.clientY / window.innerHeight;
+            }
+        }, { passive: true });
+
+        // Render initial neutral map, then start the loop
         renderMap();
-        animId = requestAnimationFrame(loop);
+        loop();
     }
 
+    // Auto-start
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
     }
 
-    window.initLiquidGlass = init;
+    // Expose for manual re-init (e.g. after AJAX content load)
+    window.initLiquidGlass = function () {
+        document.querySelectorAll('[data-liquid-glass]:not(._lgApplied)').forEach(applyTo);
+    };
 })();
