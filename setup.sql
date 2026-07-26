@@ -28,6 +28,15 @@ CREATE TABLE IF NOT EXISTS texture_packs (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 管理员表
+-- 网站设置表
+CREATE TABLE IF NOT EXISTS settings (
+    `key` VARCHAR(100) PRIMARY KEY,
+    `value` TEXT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 插入默认设置
+INSERT IGNORE INTO settings (`key`, `value`) VALUES ('bg_desktop', ''), ('bg_mobile', '');
+
 CREATE TABLE IF NOT EXISTS admins (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(100) NOT NULL UNIQUE,

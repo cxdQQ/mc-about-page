@@ -10,6 +10,22 @@
 require_once __DIR__ . '/includes/db.php';
 $db = getDb();
 
+// 创建设置表
+$db->exec("
+    CREATE TABLE IF NOT EXISTS settings (
+        `key` VARCHAR(100) PRIMARY KEY,
+        `value` TEXT
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+");
+
+// 插入默认设置
+$stmt = $db->prepare("SELECT COUNT(*) FROM settings");
+$stmt->execute();
+if ($stmt->fetchColumn() == 0) {
+    $db->prepare("INSERT INTO settings (`key`, `value`) VALUES (?, ?)")->execute(['bg_desktop', '']);
+    $db->prepare("INSERT INTO settings (`key`, `value`) VALUES (?, ?)")->execute(['bg_mobile', '']);
+}
+
 // 创建数据表
 $db->exec("
     CREATE TABLE IF NOT EXISTS texture_packs (

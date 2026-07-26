@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/settings.php';
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $texture = getTexture($id);
@@ -18,6 +19,7 @@ if (!$texture) {
     <meta name="description" content="<?= htmlspecialchars($texture['short_description']) ?>">
     <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2306b6d4'/><text x='50' y='68' font-size='50' font-weight='900' text-anchor='middle' fill='%23ffffff'>茉</text></svg>">
+    <?php renderBgStyles(); ?>
 </head>
 <body>
     <!-- Navigation -->

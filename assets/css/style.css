@@ -42,11 +42,25 @@ html {
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg-primary);
+    background-color: var(--bg-primary);
+    background-image: var(--bg-desktop, url('https://picsum.photos/seed/mc/1920/1080'));
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-blend-mode: soft-light;
     color: var(--text-primary);
     min-height: 100vh;
     line-height: 1.6;
     overflow-x: hidden;
+}
+
+/* Different background for mobile */
+@media (max-width: 768px) {
+    body {
+        background-image: var(--bg-mobile, url('https://picsum.photos/seed/mc-mobile/768/1024'));
+        background-attachment: scroll;
+        background-blend-mode: luminosity;
+    }
 }
 
 /* === iOS Liquid Glass Background === */
@@ -58,10 +72,10 @@ body::before {
     width: 220%;
     height: 220%;
     background:
-        radial-gradient(ellipse 70% 50% at 10% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 55%),
-        radial-gradient(ellipse 50% 60% at 90% 80%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
-        radial-gradient(ellipse 60% 50% at 50% 40%, rgba(14, 165, 233, 0.04) 0%, transparent 50%),
-        radial-gradient(ellipse 40% 40% at 30% 70%, rgba(6, 182, 212, 0.05) 0%, transparent 40%);
+        radial-gradient(ellipse 70% 50% at 10% 20%, rgba(6, 182, 212, 0.04) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 60% at 90% 80%, rgba(6, 182, 212, 0.03) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 50% at 50% 40%, rgba(14, 165, 233, 0.02) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 40% at 30% 70%, rgba(6, 182, 212, 0.025) 0%, transparent 40%);
     pointer-events: none;
     z-index: 0;
     animation: liquidShift 20s ease-in-out infinite alternate;
@@ -1652,6 +1666,27 @@ tbody tr:hover {
     .btn-primary,
     .btn-ghost {
         padding: 12px 20px;
+    }
+
+    /* Disable liquid bg animation on mobile for performance */
+    body::before {
+        animation: none;
+        opacity: 0.5;
+    }
+
+    /* Navbar mobile */
+    .navbar {
+        padding: 0 12px;
+    }
+
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+
+    .navbar .logo {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
     }
 }
 
