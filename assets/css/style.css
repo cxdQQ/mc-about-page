@@ -75,29 +75,47 @@ body::before {
     100% { transform: translate(0, 0) rotate(0deg); }
 }
 
-/* === Liquid Glass Base === */
-/* Elements with [data-liquid-glass] get the SVG filter effect via JS.
-   This CSS provides fallback styling before JS loads. */
-.liquid-glass,
+/* === Liquid Glass Effect === */
+/* Elements with [data-liquid-glass] get the SVG filter + glass layers via JS */
 [data-liquid-glass] {
     position: relative;
     overflow: hidden;
 }
 
-.liquid-glass::after,
-[data-liquid-glass]::after {
-    content: '';
+/* Glass layer base styles (JS sets inline styles, CSS is fallback) */
+.liquid_glass-outer,
+.liquid_glass-cover,
+.liquid_glass-sharp,
+.liquid_glass-reflect {
     position: absolute;
-    inset: 0;
     pointer-events: none;
-    z-index: 0;
-    border-radius: inherit;
-    background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.25) 0%,
-        transparent 50%,
-        rgba(255, 255, 255, 0.05) 100%
-    );
+    z-index: 1;
+    overflow: hidden;
+}
+
+.liquid_glass-outer {
+    inset: 0;
+}
+
+.liquid_glass-cover {
+    inset: 0;
+    background: rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+.liquid_glass-sharp {
+    inset: 0;
+    box-shadow:
+        inset 1px 1px 0px 0px rgba(255, 255, 255, 0.5),
+        inset -1px -1px 0px 0px rgba(255, 255, 255, 0.6);
+}
+
+.liquid_glass-reflect {
+    inset: 1px;
+    box-shadow:
+        inset 2px 2px 6px 2px rgba(255, 255, 255, 0.2),
+        inset -2px -2px 4px -1px rgba(255, 255, 255, 0.2);
 }
 
 /* === iOS Glass Components (fallback, replaced by liquid-glass JS) === */
