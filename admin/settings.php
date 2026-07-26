@@ -11,16 +11,96 @@ $db->exec("CREATE TABLE IF NOT EXISTS settings (
     `value` TEXT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-// 处理保存
+// 上传目录
+$uploadDir = __DIR__ . '/../uploads/backgrounds/';
+if (!is_dir($uploadDir)) {
+    mkdir($uploadDir, 0755, true);
+}
+
 $message = '';
+$error = '';
+
+// 处理删除
+if (isset($_GET['delete']) && ($_GET['delete'] === 'desktop' || $_GET['delete'] === 'mobile')) {
+    $key = 'bg_' . $_GET['delete'];
+    $old = getSetting($key);
+    if ($old && strpos($old, '/uploads/backgrounds/') !== false) {
+        $oldPath = __DIR__ . '/../' . ltrim($old, '/');
+        if (file_exists($oldPath)) @unlink($oldPath);
+    }
+    setSetting($key, '');
+    $message = '✓ 背景图片已移除';
+}
+
+// 处理上传/保存
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['bg_desktop'])) {
-        setSetting('bg_desktop', trim($_POST['bg_desktop']));
+    // 桌面背景上传
+    if (isset($_FILES['bg_desktop_file']) && $_FILES['bg_desktop_file']['error'] === UPLOAD_ERR_OK) {
+        $file = $_FILES['bg_desktop_file'];
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) {
+            $error = '桌面背景：仅支持 jpg/png/webp/gif 格式';
+        } else {
+            $filename = 'desktop_' . time() . '.' . $ext;
+            $dest = $uploadDir . $filename;
+            if (move_uploaded_file($file['tmp_name'], $dest)) {
+                // 删除旧文件
+                $old = getSetting('bg_desktop');
+                if ($old && strpos($old, '/uploads/backgrounds/') !== false) {
+                    $oldPath = __DIR__ . '/../' . ltrim($old, '/');
+                    if (file_exists($oldPath)) @unlink($oldPath);
+                }
+                setSetting('bg_desktop', '/uploads/backgrounds/' . $filename);
+                $message = '✓ 桌面背景已更新';
+            } else {
+                $error = '桌面背景上传失败';
+            }
+        }
     }
-    if (isset($_POST['bg_mobile'])) {
-        setSetting('bg_mobile', trim($_POST['bg_mobile']));
+    // 桌面背景 URL
+    elseif (isset($_POST['bg_desktop_url']) && trim($_POST['bg_desktop_url'])) {
+        $url = trim($_POST['bg_desktop_url']);
+        $old = getSetting('bg_desktop');
+        if ($old && strpos($old, '/uploads/backgrounds/') !== false) {
+            $oldPath = __DIR__ . '/../' . ltrim($old, '/');
+            if (file_exists($oldPath)) @unlink($oldPath);
+        }
+        setSetting('bg_desktop', $url);
+        $message = '✓ 桌面背景已更新';
     }
-    $message = '<div class="success-msg">✓ 背景图片已保存</div>';
+
+    // 手机背景上传
+    if (isset($_FILES['bg_mobile_file']) && $_FILES['bg_mobile_file']['error'] === UPLOAD_ERR_OK) {
+        $file = $_FILES['bg_mobile_file'];
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) {
+            $error = '手机背景：仅支持 jpg/png/webp/gif 格式';
+        } else {
+            $filename = 'mobile_' . time() . '.' . $ext;
+            $dest = $uploadDir . $filename;
+            if (move_uploaded_file($file['tmp_name'], $dest)) {
+                $old = getSetting('bg_mobile');
+                if ($old && strpos($old, '/uploads/backgrounds/') !== false) {
+                    $oldPath = __DIR__ . '/../' . ltrim($old, '/');
+                    if (file_exists($oldPath)) @unlink($oldPath);
+                }
+                setSetting('bg_mobile', '/uploads/backgrounds/' . $filename);
+                $message = '✓ 手机背景已更新';
+            } else {
+                $error = '手机背景上传失败';
+            }
+        }
+    }
+    elseif (isset($_POST['bg_mobile_url']) && trim($_POST['bg_mobile_url'])) {
+        $url = trim($_POST['bg_mobile_url']);
+        $old = getSetting('bg_mobile');
+        if ($old && strpos($old, '/uploads/backgrounds/') !== false) {
+            $oldPath = __DIR__ . '/../' . ltrim($old, '/');
+            if (file_exists($oldPath)) @unlink($oldPath);
+        }
+        setSetting('bg_mobile', $url);
+        $message = '✓ 手机背景已更新';
+    }
 }
 
 $settings = getSettings();
@@ -35,14 +115,21 @@ $bgMobile = $settings['bg_mobile'] ?? '';
     <title>网站设置 - 茉莉柚茶 管理后台</title>
     <link rel="stylesheet" href="/assets/css/style.css">
     <style>
-        .settings-form { max-width:600px; }
-        .settings-form .form-group { margin-bottom:24px; }
-        .settings-form label { display:block; font-weight:600; margin-bottom:8px; font-size:0.95rem; }
-        .settings-form .form-input { width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(0,0,0,0.1); font-size:0.95rem; background:rgba(255,255,255,0.6); transition:all var(--transition); }
-        .settings-form .form-input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px var(--accent-glow); }
-        .settings-form .hint { display:block; margin-top:4px; font-size:0.8rem; color:var(--text-muted); }
-        .settings-form .preview-box { margin-top:8px; width:100%; height:100px; border-radius:12px; background-size:cover; background-position:center; border:1px solid rgba(0,0,0,0.06); }
-        .success-msg { padding:12px 18px; border-radius:12px; background:rgba(6,182,212,0.1); color:#0891b2; font-weight:600; margin-bottom:24px; border:1px solid rgba(6,182,212,0.2); }
+        .settings-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+        @media (max-width:900px) { .settings-grid { grid-template-columns:1fr; } }
+        .settings-card { padding:24px; border-radius:var(--radius); background:rgba(255,255,255,0.55); border:1px solid rgba(255,255,255,0.3); }
+        .settings-card h3 { font-size:1.05rem; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+        .settings-card .preview-box { width:100%; height:160px; border-radius:12px; background-size:cover; background-position:center; border:1px solid rgba(0,0,0,0.06); margin-bottom:16px; background-color:#eef2f6; }
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; font-weight:600; margin-bottom:6px; font-size:0.9rem; color:var(--text-secondary); }
+        .form-input { width:100%; padding:10px 14px; border-radius:10px; border:1px solid rgba(0,0,0,0.1); font-size:0.9rem; background:rgba(255,255,255,0.7); transition:all var(--transition); }
+        .form-input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px var(--accent-glow); }
+        .form-file { width:100%; padding:8px 0; font-size:0.9rem; }
+        .divider { display:flex; align-items:center; gap:12px; margin:16px 0; color:var(--text-muted); font-size:0.85rem; }
+        .divider::before, .divider::after { content:''; flex:1; height:1px; background:rgba(0,0,0,0.06); }
+        .btn-group { display:flex; gap:8px; flex-wrap:wrap; }
+        .success-msg { padding:12px 18px; border-radius:12px; background:rgba(6,182,212,0.1); color:#0891b2; font-weight:600; margin-bottom:20px; border:1px solid rgba(6,182,212,0.2); display:flex; align-items:center; gap:8px; }
+        .error-msg { padding:12px 18px; border-radius:12px; background:rgba(239,68,68,0.1); color:#dc2626; font-weight:600; margin-bottom:20px; border:1px solid rgba(239,68,68,0.2); display:flex; align-items:center; gap:8px; }
     </style>
 </head>
 <body>
@@ -80,42 +167,80 @@ $bgMobile = $settings['bg_mobile'] ?? '';
                 </h1>
             </div>
 
-            <?= $message ?>
+            <?php if ($message): ?>
+                <div class="success-msg">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    <?= htmlspecialchars($message) ?>
+                </div>
+            <?php endif; ?>
+            <?php if ($error): ?>
+                <div class="error-msg">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    <?= htmlspecialchars($error) ?>
+                </div>
+            <?php endif; ?>
 
-            <form method="POST" class="settings-form">
-                <div class="sidebar-card" style="margin-bottom:24px;" data-liquid-glass>
-                    <h3>桌面端背景图片</h3>
+            <form method="POST" enctype="multipart/form-data" class="settings-grid">
+                <!-- 桌面背景 -->
+                <div class="settings-card" data-liquid-glass>
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                        桌面端背景
+                    </h3>
+                    <div class="preview-box" style="background-image:url('<?= htmlspecialchars($bgDesktop ?: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="160" fill="%23eef2f6"><rect width="400" height="160"/><text x="200" y="85" text-anchor="middle" fill="%2394a3b8" font-size="14">暂无背景图片</text></svg>') ?>');"></div>
+                    
                     <div class="form-group">
-                        <label for="bg_desktop">图片 URL</label>
-                        <input type="url" name="bg_desktop" id="bg_desktop" class="form-input" 
-                               placeholder="https://example.com/desktop-bg.jpg" 
-                               value="<?= htmlspecialchars($bgDesktop) ?>">
-                        <span class="hint">建议尺寸 1920×1080 以上，留空则使用默认背景</span>
+                        <label>上传图片</label>
+                        <input type="file" name="bg_desktop_file" class="form-file" accept="image/jpeg,image/png,image/webp,image/gif">
+                    </div>
+
+                    <div class="divider">或输入图片 URL</div>
+
+                    <div class="form-group">
+                        <label>图片 URL</label>
+                        <input type="url" name="bg_desktop_url" class="form-input" placeholder="https://example.com/bg.jpg" value="">
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary" style="flex:1;">保存桌面背景</button>
                         <?php if ($bgDesktop): ?>
-                        <div class="preview-box" style="background-image:url('<?= htmlspecialchars($bgDesktop) ?>');"></div>
+                            <a href="?delete=desktop" class="btn btn-ghost" style="color:#ef4444;" onclick="return confirm('确定移除桌面背景？')">移除</a>
                         <?php endif; ?>
                     </div>
                 </div>
 
-                <div class="sidebar-card" style="margin-bottom:24px;" data-liquid-glass>
-                    <h3>手机端背景图片</h3>
+                <!-- 手机背景 -->
+                <div class="settings-card" data-liquid-glass>
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                        手机端背景
+                    </h3>
+                    <div class="preview-box" style="background-image:url('<?= htmlspecialchars($bgMobile ?: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="160" fill="%23eef2f6"><rect width="400" height="160"/><text x="200" y="85" text-anchor="middle" fill="%2394a3b8" font-size="14">暂无背景图片</text></svg>') ?>');"></div>
+
                     <div class="form-group">
-                        <label for="bg_mobile">图片 URL</label>
-                        <input type="url" name="bg_mobile" id="bg_mobile" class="form-input" 
-                               placeholder="https://example.com/mobile-bg.jpg" 
-                               value="<?= htmlspecialchars($bgMobile) ?>">
-                        <span class="hint">建议尺寸 768×1024 以上，留空则使用默认背景</span>
+                        <label>上传图片</label>
+                        <input type="file" name="bg_mobile_file" class="form-file" accept="image/jpeg,image/png,image/webp,image/gif">
+                    </div>
+
+                    <div class="divider">或输入图片 URL</div>
+
+                    <div class="form-group">
+                        <label>图片 URL</label>
+                        <input type="url" name="bg_mobile_url" class="form-input" placeholder="https://example.com/bg-mobile.jpg" value="">
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary" style="flex:1;">保存手机背景</button>
                         <?php if ($bgMobile): ?>
-                        <div class="preview-box" style="background-image:url('<?= htmlspecialchars($bgMobile) ?>');"></div>
+                            <a href="?delete=mobile" class="btn btn-ghost" style="color:#ef4444;" onclick="return confirm('确定移除手机背景？')">移除</a>
                         <?php endif; ?>
                     </div>
-                </div>
-
-                <div style="display:flex;gap:12px;">
-                    <button type="submit" class="btn btn-primary">保存设置</button>
-                    <a href="/admin/index.php" class="btn btn-ghost">返回后台</a>
                 </div>
             </form>
+
+            <div style="margin-top:20px;font-size:0.85rem;color:var(--text-muted);text-align:center;">
+                建议：桌面端使用 1920×1080 以上横图 · 手机端使用 768×1024 以上竖图 · 支持 jpg/png/webp/gif
+            </div>
         </main>
     </div>
     <script src="/assets/js/liquid-glass.js" defer></script>
