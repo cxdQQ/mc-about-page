@@ -196,7 +196,9 @@
             }
 
             if (layer.name === 'cover') {
-                div.style.background = 'rgba(0,0,0,0.06)';
+                div.style.background = 'rgba(255,255,255,0.35)';
+                div.style.backdropFilter = 'blur(4px)';
+                div.style.webkitBackdropFilter = div.style.backdropFilter;
             }
 
             if (layer.name === 'sharp') {
